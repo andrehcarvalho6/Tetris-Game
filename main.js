@@ -1,24 +1,45 @@
+//game working - sprint 1 but not saved on github
+
 class Game {
   constructor() {
     this.piece = null;
-    this.PiecesArr = [];
-    this.height = 10;
+    this.piecesArr = [];
+    this.gridElm = document.querySelector("#grid");
+    this.removedLinesCount = document.querySelector("lines-removed");
+    this.removedLinesCount = 0;
   }
 
   start() {
     this.createNewPiece();
 
     setInterval(() => {
-      //   if (!this.piece || this.piece.isAtBottom() || this.checkCollision()) {
-      //     this.stopPiece();
-      //     // if (this.piece.height > 105) {
-      //     //   window.location.href = "./LetsRetry.html";
-      //     //   return;
-      //     }
-      //   } else {
-      this.createNewPiece();
-      this.piece.moveDown();
-    }, 200);
+      if (!this.piece || this.piece.isAtBottom()) {
+        this.piecesArr.push(this.piece);
+        this.checkCompletedLines();
+        if (this.piecesArr.some((piece) => piece.positionY >= 90)) {
+          window.location.href = "./LetsRetry.html";
+        } else {
+          this.createNewPiece();
+        }
+      } else {
+        if (
+          !this.collidesWithOtherPieces(
+            this.piece.positionX,
+            this.piece.positionY - 10
+          )
+        ) {
+          this.piece.moveDown();
+        } else {
+          this.piecesArr.push(this.piece);
+          this.checkCompletedLines();
+          if (this.piecesArr.some((piece) => piece.positionY >= 90)) {
+            window.location.href = "./LetsRetry.html";
+          } else {
+            this.createNewPiece();
+          }
+        }
+      }
+    }, 400);
 
     document.addEventListener("keydown", (event) => {
       if (this.piece) {
@@ -26,39 +47,72 @@ class Game {
           this.piece.moveLeft();
         } else if (event.key === "ArrowRight") {
           this.piece.moveRight();
-        } //else if (event.key === "ArrowDown") {
-        //   this.piece.moveDown();
-        // }
+        } else if (event.key === "ArrowDown") {
+          if (
+            !this.collidesWithOtherPieces(
+              this.piece.positionX,
+              this.piece.positionY - 10
+            )
+          ) {
+            this.piece.moveDown();
+          }
+        }
       }
     });
   }
-
-  createNewPiece() {
-    this.piece = new Piece();
-    this.PiecesArr.push(this.piece);
-  }
-
-  stopPiece() {
-    this.piece = null;
-  }
-
-  checkCollision() {
-    const currentPieceRect = this.piece.pieceElm.getBoundingClientRect();
-
-    for (let i = 0; i < this.PiecesArr.length - 1; i++) {
-      const otherPieceRect = this.PiecesArr[i].pieceElm.getBoundingClientRect();
-
+  collidesWithOtherPieces(newPositionX, newPositionY) {
+    for (let i = 0; i < this.piecesArr.length; i++) {
+      const otherPiece = this.piecesArr[i];
       if (
-        currentPieceRect.bottom >= otherPieceRect.top &&
-        currentPieceRect.top <= otherPieceRect.bottom &&
-        currentPieceRect.right >= otherPieceRect.left &&
-        currentPieceRect.left <= otherPieceRect.right
+        newPositionX < otherPiece.positionX + otherPiece.width &&
+        newPositionX + this.piece.width > otherPiece.positionX &&
+        newPositionY < otherPiece.positionY + otherPiece.height &&
+        newPositionY + this.piece.height > otherPiece.positionY
+      ) {
+        return true;
+      } else if (
+        this.piece.positionY === otherPiece.positionY &&
+        newPositionX === otherPiece.positionX
       ) {
         return true;
       }
     }
-
     return false;
+  }
+
+  createNewPiece() {
+    this.piece = new Piece();
+  }
+
+  checkCompletedLines() {
+    for (let y = 0; y <= 100; y += 10) {
+      let cells = [];
+      for (let i = 0; i < this.piecesArr.length; i++) {
+        const piece = this.piecesArr[i];
+        if (piece.positionY === y) {
+          cells.push(piece.pieceElm);
+        }
+      }
+      if (cells.length === 10) {
+        this.removeLine(y);
+        y -= 10;
+      }
+    }
+  }
+
+  removeLine(y) {
+    for (let i = 0; i < this.piecesArr.length; i++) {
+      const piece = this.piecesArr[i];
+      if (piece.positionY === y) {
+        this.gridElm.removeChild(piece.pieceElm);
+        this.piecesArr.splice(i, 1);
+        i--;
+        this.removedLinesCount++;
+      } else if (piece.positionY > y) {
+        piece.positionY -= 10;
+        piece.pieceElm.style.bottom = piece.positionY + "%";
+      }
+    }
   }
 }
 
@@ -66,7 +120,7 @@ class Piece {
   constructor() {
     this.height = 10;
     this.width = 10;
-    this.positionX = 50;
+    this.positionX = 40;
     this.positionY = 100 - this.height;
     this.pieceElm = null;
     this.createPiece();
@@ -75,7 +129,7 @@ class Piece {
   createPiece() {
     const gridElm = document.querySelector("#grid");
     this.pieceElm = document.createElement("div");
-    this.pieceElm.classList = "tetromino";
+    this.pieceElm.classList = "tetromino cube";
     this.pieceElm.style.width = this.width + "%";
     this.pieceElm.style.height = this.height + "%";
     this.pieceElm.style.left = this.positionX + "%";
@@ -86,24 +140,50 @@ class Piece {
   moveLeft() {
     let currentPosition = parseFloat(this.pieceElm.style.left);
     if (currentPosition > 0) {
-      this.pieceElm.style.left = currentPosition - 10 + "%";
+      if (!this.collidesWithOtherPieces(currentPosition - 10, this.positionY)) {
+        this.pieceElm.style.left = currentPosition - 10 + "%";
+        this.positionX = currentPosition - 10;
+      }
     }
   }
 
   moveRight() {
     let currentPosition = parseFloat(this.pieceElm.style.left);
     if (currentPosition < 90) {
-      this.pieceElm.style.left = currentPosition + 10 + "%";
+      if (!this.collidesWithOtherPieces(currentPosition + 10, this.positionY)) {
+        this.pieceElm.style.left = currentPosition + 10 + "%";
+        this.positionX = currentPosition + 10;
+      }
     }
   }
 
   moveDown() {
-    this.positionY -= 5;
+    let newPositionY = this.positionY - 10;
+    if (newPositionY < 0) {
+      newPositionY = 0;
+    }
+
+    this.positionY = newPositionY;
     this.pieceElm.style.bottom = this.positionY + "%";
   }
 
   isAtBottom() {
     return this.positionY <= 0;
+  }
+
+  collidesWithOtherPieces(newPositionX, newPositionY) {
+    for (let i = 0; i < game.piecesArr.length; i++) {
+      const otherPiece = game.piecesArr[i];
+      if (
+        newPositionX < otherPiece.positionX + otherPiece.width &&
+        newPositionX + this.width > otherPiece.positionX &&
+        newPositionY < otherPiece.positionY + otherPiece.height &&
+        newPositionY + this.height > otherPiece.positionY
+      ) {
+        return true;
+      }
+    }
+    return false;
   }
 }
 

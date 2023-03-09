@@ -5,31 +5,14 @@ class Game {
     this.piece = null;
     this.piecesArr = [];
     this.gridElm = document.querySelector("#grid");
-    this.removedLinesCount = document.querySelector("lines-removed");
-    this.removedLinesCount = 0;
+    this.removedLinesCount = document.querySelector("#lines-removed");
   }
 
   start() {
     this.createNewPiece();
-
-    setInterval(() => {
-      if (!this.piece || this.piece.isAtBottom()) {
-        this.piecesArr.push(this.piece);
-        this.checkCompletedLines();
-        if (this.piecesArr.some((piece) => piece.positionY >= 90)) {
-          window.location.href = "./LetsRetry.html";
-        } else {
-          this.createNewPiece();
-        }
-      } else {
-        if (
-          !this.collidesWithOtherPieces(
-            this.piece.positionX,
-            this.piece.positionY - 10
-          )
-        ) {
-          this.piece.moveDown();
-        } else {
+    if (this.removedLinesCount / 10 < 1) {
+      setInterval(() => {
+        if (!this.piece || this.piece.isAtBottom()) {
           this.piecesArr.push(this.piece);
           this.checkCompletedLines();
           if (this.piecesArr.some((piece) => piece.positionY >= 90)) {
@@ -37,9 +20,87 @@ class Game {
           } else {
             this.createNewPiece();
           }
+        } else {
+          if (
+            !this.collidesWithOtherPieces(
+              this.piece.positionX,
+              this.piece.positionY - 10
+            )
+          ) {
+            this.piece.moveDown();
+          } else {
+            this.piecesArr.push(this.piece);
+            this.checkCompletedLines();
+            if (this.piecesArr.some((piece) => piece.positionY >= 90)) {
+              window.location.href = "./LetsRetry.html";
+            } else {
+              this.createNewPiece();
+            }
+          }
         }
-      }
-    }, 400);
+      }, 400);
+    } else if (
+      this.removedLinesCount / 10 > 1 &&
+      this.removedLinesCount / 10 < 2
+    ) {
+      setInterval(() => {
+        if (!this.piece || this.piece.isAtBottom()) {
+          this.piecesArr.push(this.piece);
+          this.checkCompletedLines();
+          if (this.piecesArr.some((piece) => piece.positionY >= 90)) {
+            window.location.href = "./LetsRetry.html";
+          } else {
+            this.createNewPiece();
+          }
+        } else {
+          if (
+            !this.collidesWithOtherPieces(
+              this.piece.positionX,
+              this.piece.positionY - 10
+            )
+          ) {
+            this.piece.moveDown();
+          } else {
+            this.piecesArr.push(this.piece);
+            this.checkCompletedLines();
+            if (this.piecesArr.some((piece) => piece.positionY >= 90)) {
+              window.location.href = "./LetsRetry.html";
+            } else {
+              this.createNewPiece();
+            }
+          }
+        }
+      }, 50);
+    } else {
+      setInterval(() => {
+        if (!this.piece || this.piece.isAtBottom()) {
+          this.piecesArr.push(this.piece);
+          this.checkCompletedLines();
+          if (this.piecesArr.some((piece) => piece.positionY >= 90)) {
+            window.location.href = "./LetsRetry.html";
+          } else {
+            this.createNewPiece();
+          }
+        } else {
+          if (
+            !this.collidesWithOtherPieces(
+              this.piece.positionX,
+              this.piece.positionY - 10
+            )
+          ) {
+            this.piece.moveDown();
+          } else {
+            this.piecesArr.push(this.piece);
+            this.checkCompletedLines();
+            if (this.piecesArr.some((piece) => piece.positionY >= 90)) {
+              window.location.href = "./LetsRetry.html";
+            } else {
+              this.createNewPiece();
+            }
+          }
+        }
+      }, 100);
+    }
 
     document.addEventListener("keydown", (event) => {
       if (this.piece) {
@@ -101,18 +162,22 @@ class Game {
   }
 
   removeLine(y) {
+    let linesRemoved = 0;
     for (let i = 0; i < this.piecesArr.length; i++) {
       const piece = this.piecesArr[i];
       if (piece.positionY === y) {
         this.gridElm.removeChild(piece.pieceElm);
         this.piecesArr.splice(i, 1);
         i--;
-        this.removedLinesCount++;
+        linesRemoved++;
       } else if (piece.positionY > y) {
         piece.positionY -= 10;
         piece.pieceElm.style.bottom = piece.positionY + "%";
       }
     }
+    this.removedLinesCount += linesRemoved;
+    document.getElementById("lines-removed").textContent =
+      this.removedLinesCount / 10;
   }
 }
 

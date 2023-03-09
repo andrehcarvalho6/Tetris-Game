@@ -1,0 +1,19 @@
+body {
+  text-align: center;
+  color: whitesmoke;
+  background-image: url(../images/space.png);
+  margin-top: 35vh;
+}
+button {
+  margin: auto;
+  /* position: absolute; */
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  height: 40px;
+  width: 150px;
+}
+/* #image {
+  background-image: url(../images/space.png);
+} */

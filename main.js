@@ -1,5 +1,3 @@
-//game working - sprint 1 but not saved on github
-
 class Game {
   constructor() {
     this.piece = null;

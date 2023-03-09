@@ -13,14 +13,14 @@ body {
   background-color: gray;
   position: absolute;
   margin-left: 25vw;
-  background-image: url(../images/grid.png);
+  background-image: url(./images/grid.png);
   background-size: cover;
   background-position: center;
 }
 
 .tetromino {
   position: absolute;
-  background-image: url(../images/OTetromino.png);
+  background-image: url(./images/OTetromino.png);
   background-size: cover;
 }
 .controls {
